@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # -*- Call me god father, and you can get your seed -*-
+# -*- I think we should let this script rock -*-
 
 import urllib2
 import urllib
