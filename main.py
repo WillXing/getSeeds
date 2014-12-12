@@ -138,7 +138,7 @@ print u"""
 """
 
 mySpider = CL_spider()
-mySpider.start('http://caoliu2014.com/',correction, startPage, endPage)
+mySpider.start('http://caoliuwang.info/',correction, startPage, endPage)
 
 print u"""
 ----------------------------------------------------------------
