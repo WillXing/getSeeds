@@ -7,6 +7,7 @@ import urllib
 import re
 import thread
 import os
+import time
 
 
 class CL_spider:
@@ -25,6 +26,13 @@ class CL_spider:
         
     def enter_the_main_page(self):
         req = urllib2.Request(self.mainUrl)
+        #req.add_header('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
+        #req.add_header('Accept-Encoding', 'gzip, deflate, sdch')
+        #req.add_header('Accept-Language', 'zh-CN,zh;q=0.8')
+        #req.add_header('Cache-Control', 'max-age=0')
+        #req.add_header('Connection', 'keep-alive')
+        #req.add_header('Host', 'zz.zpva.org')
+        req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
         resp = urllib2.urlopen(req)
         mainPage = resp.read()
 
@@ -40,8 +48,11 @@ class CL_spider:
 
     def enter_the_sub_page(self):
         req = urllib2.Request(self.subUrl)
+        req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
         resp = urllib2.urlopen(req)
         subPage = resp.read()
+
+        print subPage
         
         movieList = re.findall(u'<tr.*?<h3.*?<a.*?href="(.*?)".*?target="_blank".*?>\[.*?\](.*?)</a>.*?</h3>.*?</tr>', subPage, re.S)
 
@@ -54,6 +65,7 @@ class CL_spider:
     def enter_the_movie_page(self, startPos, endPos):
         for iCount in range(startPos, endPos):
             req = urllib2.Request(self.movies[iCount][0])
+            req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
             resp = urllib2.urlopen(req)
             moviePage = resp.read()
             downloadUrl = re.findall(u'(http://www.rmdown.com/link.php\?hash=.*?)</a>', moviePage, re.S)
@@ -61,17 +73,18 @@ class CL_spider:
             if(length != 0):
                 print "Downloading: "+self.movies[iCount][1]
                 try:
-                    self.down_load_the_seed(downloadUrl[0], self.movies[iCount][1])
+                    #self.down_load_the_seed(downloadUrl[0], self.movies[iCount][1])
+                    self.down_load_the_seed(downloadUrl[0], str(iCount) + str(time.time()))
                     print "success"
-                except :
-                    print "this one fail"
+                except Exception as err:
+                    print err
         
         
     def down_load_the_seed(self, referer, title):
         url = 'http://www.rmdown.com/download.php'
         
         req = urllib2.Request(referer)
-
+        req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
         resp = urllib2.urlopen(req)
         data = resp.read()
         res = re.findall("<FORM.*?action='download.php'.*?<INPUT.*?name=\"ref\".*?value=\"(.*?)\".*?<INPUT.*?NAME=\"reff\".*?value=\"(.*?)\".*?</FORM>", data, re.S)
@@ -82,6 +95,7 @@ class CL_spider:
         postData = urllib.urlencode(postValue)
         
         reqDown=urllib2.Request(url, postData)
+        reqDown.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
 
         respDown = urllib2.urlopen(reqDown)
 
@@ -89,7 +103,7 @@ class CL_spider:
 
         downloadPath='./caoliuseed/'
         
-        title = title.replace('\\','-').replace('/','-')
+        #title = title.replace('\\','-').replace('/','-')
         if not os.path.isdir(downloadPath):
             os.makedirs(downloadPath)
         with open(downloadPath + title + '.torrent', 'wb') as code:
@@ -138,7 +152,7 @@ print u"""
 """
 
 mySpider = CL_spider()
-mySpider.start('http://caoliu2014.com/',correction, startPage, endPage)
+mySpider.start('http://zz.zpva.org/',correction, startPage, endPage)
 
 print u"""
 ----------------------------------------------------------------
