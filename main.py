@@ -13,7 +13,7 @@ import time
 class CL_spider:
 
     def __init__(self):
-        self.y=""
+        self.y = ""
         self.movies = []
 
     def start(self, host, correction, startPage, endPage):
@@ -23,7 +23,7 @@ class CL_spider:
         self.startPage = startPage
         self.endPage = endPage
         self.enter_the_main_page()
-        
+
     def enter_the_main_page(self):
         req = urllib2.Request(self.mainUrl)
         #req.add_header('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
@@ -32,11 +32,13 @@ class CL_spider:
         #req.add_header('Cache-Control', 'max-age=0')
         #req.add_header('Connection', 'keep-alive')
         #req.add_header('Host', 'zz.zpva.org')
-        req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
+        req.add_header(
+            'User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
         resp = urllib2.urlopen(req)
         mainPage = resp.read()
 
-        urlList = re.findall(u'<tr.*?tr3 f_one.*?>.*?<th.*?<a.*?href="(.*?)".*?target="_blank".*?</a>.*?</th>.*?</tr>', mainPage, re.S)
+        urlList = re.findall(
+            u'<tr.*?tr3 f_one.*?>.*?<th.*?<a.*?href="(.*?)".*?target="_blank".*?</a>.*?</th>.*?</tr>', mainPage, re.S)
         if(self.correction == 1):
             self.subUrl = self.host + urlList[1]
         else:
@@ -48,81 +50,78 @@ class CL_spider:
 
     def enter_the_sub_page(self):
         req = urllib2.Request(self.subUrl)
-        req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
+        req.add_header(
+            'User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
         resp = urllib2.urlopen(req)
         subPage = resp.read()
-        
-        movieList = re.findall(u'<tr.*?<h3.*?<a.*?href="(.*?)".*?target="_blank".*?>\[.*?\](.*?)</a>.*?</h3>.*?</tr>', subPage, re.S)
+
+        movieList = re.findall(
+            u'<tr.*?<h3.*?<a.*?href="(.*?)".*?target="_blank".*?>\[.*?\](.*?)</a>.*?</h3>.*?</tr>', subPage, re.S)
 
         del movieList[0]
         for movie in movieList:
             self.movies.append([self.host + movie[0], movie[1]])
-        
-        self.enter_the_movie_page(0,len(self.movies))
+
+        self.enter_the_movie_page(0, len(self.movies))
 
     def enter_the_movie_page(self, startPos, endPos):
         for iCount in range(startPos, endPos):
             req = urllib2.Request(self.movies[iCount][0])
-            req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
+            req.add_header(
+                'User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
             resp = urllib2.urlopen(req)
             moviePage = resp.read()
-            downloadUrl = re.findall(u'(http://www.rmdown.com/link.php\?hash=.*?)</a>', moviePage, re.S)
+            downloadUrl = re.findall(
+                u'(http://www.rmdown.com/link.php\?hash=.*?)</a>', moviePage, re.S)
             length = len(downloadUrl)
             if(length != 0):
                 print "Downloading: "+self.movies[iCount][1]
                 try:
                     #self.down_load_the_seed(downloadUrl[0], self.movies[iCount][1])
-                    self.down_load_the_seed(downloadUrl[0], str(iCount) + str(time.time()))
+                    self.down_load_the_seed(
+                        downloadUrl[0], str(iCount) + str(time.time()))
                     print "success"
                 except Exception as err:
                     print err
-        
-        
+
     def down_load_the_seed(self, referer, title):
         url = 'http://www.rmdown.com/download.php'
-        
+
         req = urllib2.Request(referer)
-        req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
+        req.add_header(
+            'User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
         resp = urllib2.urlopen(req)
         data = resp.read()
-        res = re.findall("<FORM.*?action='download.php'.*?<INPUT.*?name=\"ref\".*?value=\"(.*?)\".*?<INPUT.*?NAME=\"reff\".*?value=\"(.*?)\".*?</FORM>", data, re.S)
+        res = re.findall(
+            "<FORM.*?action='download.php'.*?<INPUT.*?name=\"ref\".*?value=\"(.*?)\".*?<INPUT.*?NAME=\"reff\".*?value=\"(.*?)\".*?</FORM>", data, re.S)
 
-        postValue = {'ref':res[0][0]
-                     ,'reff':res[0][1]
+        postValue = {'ref': res[0][0], 'reff': res[0][1]
                      }
         postData = urllib.urlencode(postValue)
-        
-        reqDown=urllib2.Request(url, postData)
-        reqDown.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
+
+        reqDown = urllib2.Request(url, postData)
+        reqDown.add_header(
+            'User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36')
 
         respDown = urllib2.urlopen(reqDown)
 
         dataDown = respDown.read()
 
-        downloadPath='./caoliuseed/'
-        
+        downloadPath = './seed/'
+
         #title = title.replace('\\','-').replace('/','-')
         if not os.path.isdir(downloadPath):
             os.makedirs(downloadPath)
         with open(downloadPath + title + '.torrent', 'wb') as code:
             code.write(dataDown)
-        
+
 
 print u"""  
 ---------------------------------------  
-   程序：CL爬虫  
-   版本：0.1  
-   作者：Xing 
-   操作：按提示操作
-   注意：本程序没有异常处理，鲁棒性不强，请不要乱操作~~~~
-   温馨提示：片是人家拍的，身体是自己的
 ---------------------------------------  
-"""  
+"""
 
 print u"""
-少年你要看有码还是无码？
-0,无码
-1,有码
 """
 correction = raw_input()
 correction = int(correction)
@@ -139,10 +138,7 @@ print u"""
 endPage = raw_input()
 endPage = int(endPage)
 
-if(correction == 1):
-    print "你选择了【有码】，从第"+str(startPage)+"页到第"+str(endPage)+"页"
-else:
-    print "你选择了【无码】，从第"+str(startPage)+"页到第"+str(endPage)+"页"
+print "从第"+str(startPage)+"页到第"+str(endPage)+"页"
 print u"""
 ----------------------------------------------------------------
 开始爬行~!况且况且况且
@@ -150,12 +146,10 @@ print u"""
 """
 
 mySpider = CL_spider()
-mySpider.start('http://zz.zpva.org/',correction, startPage, endPage)
+mySpider.start('https://domain.com', correction, startPage, endPage)
 
 print u"""
 ----------------------------------------------------------------
-看看'caoliuseed'文件夹下面有木有好东西
 ----------------------------------------------------------------
 """
-
 
